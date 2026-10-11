@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#030202">
+<title>Nutre Compare Pro</title>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  /* ---- Identidade Germinare ----
+     Laranja da logo (#F07800) = cor de AÇÃO: botões, aba ativa, seleção, sliders.
+     Verde da folha (#009040), clareado para leitura no escuro = resultado BOM.
+     Amarelo = atenção. Vermelho = problema. Assim o laranja nunca é confundido
+     com alerta, e o verde sempre significa "favorável".                        */
+  --marca:#F07800; --marca-clara:#FF9E3D; --marca-fundo:#2A1805; --marca-tx:#1A0D00;
+  --ok:#2EAD64; --ok-fundo:#0B2416; --ok-tx:#9BE3B8;
+  --aviso:#E8B31A; --aviso-fundo:#2A2206; --aviso-tx:#F3DC8F;
+  --erro:#E5484D; --erro-fundo:#301213; --erro-tx:#F7C1C1;
+  /* neutros quentes, puxados do preto da logo */
+  --topo:#030202; --bg:#0E0D0C; --panel:#1B1917; --panel2:#141311; --campo:#0A0908;
+  --line:#2F2B27; --line2:#23201D; --tx:#F2EDE8; --tx2:#A39A91;
+  /* simulador: original = referência (neutro); reestruturada = proposta (marca) */
+  --serie-original:#9A938C; --serie-nova:#F07800;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;font-size:15px}
+/* faixa da marca no topo — mesmo preto do fundo da logo, para ela se fundir */
+.marcaTopo{background:var(--topo);border-bottom:2px solid var(--marca)}
+.marcaTopo .in{max-width:1500px;margin:0 auto;padding:8px 16px;display:flex;align-items:center;gap:14px}
+.marcaTopo img{height:34px;width:auto;display:block}
+.marcaTopo .tag{margin-left:auto;color:var(--tx2);font-size:12px;letter-spacing:.04em;text-align:right}
+h1 .pro{color:var(--marca)}
+.wrap{display:flex;align-items:flex-start;gap:0;max-width:1500px;margin:0 auto}
+/* sidebar */
+.side{width:290px;flex:0 0 290px;background:var(--panel2);padding:18px 16px;
+  border-right:1px solid var(--line);min-height:100vh}
+.side h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2);
+  margin:18px 0 10px}
+.side h3:first-child{margin-top:0}
+label{display:block;font-size:12px;color:var(--tx2);margin:10px 0 4px}
+select,input[type=text],input[type=number]{width:100%;padding:8px 10px;background:var(--campo);
+  color:var(--tx);border:1px solid var(--line);border-radius:7px;font-size:14px;font-family:inherit}
+select:focus,input[type=text]:focus,input[type=number]:focus{outline:none;border-color:var(--marca);
+  box-shadow:0 0 0 3px rgba(240,120,0,.22)}
+input[type=number]{text-align:right}
+.main{flex:1;padding:22px 26px;min-width:0}
+h1{margin:0 0 4px;font-size:27px}
+.sub{color:var(--tx2);margin:0 0 18px;font-size:14px}
+h2{font-size:19px;margin:26px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+h3.s{font-size:15px;margin:18px 0 9px;color:var(--tx)}
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--line);margin-bottom:8px;flex-wrap:wrap}
+.tab{padding:10px 16px;cursor:pointer;color:var(--tx2);border-bottom:2px solid transparent;
+  margin-bottom:-2px;font-size:14px;white-space:nowrap}
+.tab.on{color:var(--marca);border-bottom-color:var(--marca);font-weight:600}
+.tab:hover{color:var(--tx)}
+.pane{display:none}.pane.on{display:block}
+/* cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px 15px}
+.card .lab{font-size:12px;color:var(--tx2);margin-bottom:5px}
+.card .val{font-size:22px;font-weight:700}
+.card .dl{font-size:12px;margin-top:3px}
+.up{color:var(--ok)}.dn{color:var(--erro)}.mut{color:var(--tx2)}
+details{margin-top:9px;border-top:1px solid var(--line);padding-top:7px}
+summary{cursor:pointer;font-size:12px;color:var(--marca-clara);list-style:none}
+summary::-webkit-details-marker{display:none}
+summary:before{content:"ⓘ ";}
+.memo{font-size:12.5px;color:var(--tx2);line-height:1.65;margin-top:7px}
+.memo b{color:var(--tx)}
+.memo code{display:block;background:var(--campo);padding:7px 9px;border-radius:6px;
+  margin:6px 0;color:var(--marca-clara);font-size:12px;white-space:pre-wrap;word-break:break-word}
+.memo ul{margin:5px 0;padding-left:17px}
+.blk{background:var(--erro-fundo);border-left:3px solid var(--erro);padding:8px 11px;border-radius:5px;
+  color:var(--erro-tx);font-size:12.5px;margin-top:6px}
+.alert{background:var(--aviso-fundo);border-left:3px solid var(--aviso);padding:9px 12px;border-radius:5px;
+  color:var(--aviso-tx);font-size:13px;margin:9px 0}
+.okmsg{background:var(--ok-fundo);border-left:3px solid var(--ok);padding:9px 12px;border-radius:5px;
+  color:var(--ok-tx);font-size:13px;margin:9px 0}
+.errmsg{background:var(--erro-fundo);border-left:3px solid var(--erro);padding:9px 12px;border-radius:5px;
+  color:var(--erro-tx);font-size:13px;margin:9px 0}
+.info{background:var(--panel);border-left:3px solid var(--tx2);padding:9px 12px;border-radius:5px;
+  color:var(--tx);font-size:13px;margin:9px 0}
+/* blocos recolhiveis de selecao */
+details.sec{margin:22px 0 10px;border:0;padding:0}
+details.sec>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:9px;
+  font-size:19px;font-weight:600;padding-bottom:7px;border-bottom:1px solid var(--line);
+  color:var(--tx);user-select:none}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary:before{content:"▸";color:var(--marca);font-size:15px;
+  transition:transform .15s ease;display:inline-block}
+details.sec[open]>summary:before{transform:rotate(90deg)}
+details.sec>summary:hover{color:var(--marca-clara)}
+.cnt{margin-left:auto;font-size:12.5px;font-weight:400;color:var(--tx2);
+  text-align:right;max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+details.sub2{margin:10px 0}
+details.sub2>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;
+  font-size:13px;color:var(--tx2);user-select:none;padding:3px 0}
+details.sub2>summary::-webkit-details-marker{display:none}
+details.sub2>summary:before{content:"▸";color:var(--marca);transition:transform .15s ease;
+  display:inline-block}
+details.sub2[open]>summary:before{transform:rotate(90deg)}
+details.sub2>summary:hover{color:var(--marca-clara)}
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 4px}
+.chip{padding:6px 13px;border-radius:20px;border:1px solid var(--line);background:var(--panel);
+  cursor:pointer;font-size:13px;color:var(--tx2);user-select:none}
+.chip:hover{border-color:var(--tx2)}
+.chip.on{background:var(--marca-fundo);border-color:var(--marca);color:var(--marca-clara);font-weight:600}
+.chip.p{font-size:12px;padding:5px 11px}
+/* bars */
+.bars{margin-bottom:17px}
+.bar{display:flex;align-items:center;margin-bottom:6px}
+.bn{width:135px;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bt{flex:1;background:var(--line);border-radius:10px;height:18px;overflow:hidden;margin-right:10px}
+.bf{height:100%;border-radius:10px}
+.bv{width:66px;font-size:13px;text-align:right}
+/* table */
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+th{background:var(--panel);text-align:left;padding:8px 10px;color:var(--tx2);
+  font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line)}
+td{padding:7px 10px;border-bottom:1px solid var(--line2)}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+.prov{color:var(--erro);font-weight:700}
+/* formulation rows */
+/* sliders de formulacao */
+.frow{padding:9px 0;border-bottom:1px solid var(--line2)}
+.fhead{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:5px;gap:10px}
+.fnome{font-size:14px;font-weight:600}
+.lnk{font-size:11.5px;font-weight:600;color:var(--tx2);background:var(--campo);
+  border:1px solid var(--line);border-radius:12px;padding:2px 8px;margin-left:8px;
+  white-space:nowrap}
+.fval{font-size:15px;font-variant-numeric:tabular-nums;font-weight:700;min-width:64px;text-align:right;
+  display:flex;align-items:center;gap:3px;flex:0 0 auto}
+/* percentual editável ao lado do slider: toque, digite, Enter */
+input.pct{width:74px;padding:3px 7px;text-align:right;font-size:15px;font-weight:700;
+  font-variant-numeric:tabular-nums;background:transparent;border:1px solid var(--line);
+  border-radius:6px;color:var(--tx);cursor:text}
+input.pct:hover{border-color:var(--tx2)}
+input.pct:focus{background:var(--campo)}
+/* v3: cadeado por ingrediente e painel de ajuste automático */
+button.trava{background:transparent;border:1px solid var(--line);border-radius:6px;padding:2px 6px;
+  margin-right:8px;font-size:14px;line-height:1.3;cursor:pointer;vertical-align:middle}
+button.trava:hover{background:transparent;border-color:var(--tx2)}
+button.trava.on{border-color:var(--marca);background:var(--marca-fundo)}
+button.trava:disabled{cursor:default;opacity:.75}
+input.pct:disabled{opacity:.6;cursor:not-allowed}
+input[type=range]:disabled{opacity:.45;cursor:not-allowed}
+.painel{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:18px 0 6px}
+.fmsg{font-size:12px;margin-top:5px;color:var(--aviso-tx);line-height:1.5}
+.fmsg:empty{display:none}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:20px;
+  background:transparent;cursor:pointer;margin:0;display:block}
+input[type=range]::-webkit-slider-runnable-track{height:9px;border-radius:6px;background:var(--line)}
+input[type=range]::-moz-range-track{height:9px;border-radius:6px;background:var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:19px;
+  height:19px;border-radius:50%;background:#fff;border:3px solid var(--marca);margin-top:-5px;
+  box-shadow:0 1px 4px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;
+  border:3px solid var(--marca);box-shadow:0 1px 4px rgba(0,0,0,.5)}
+input[type=range]:focus{outline:none}
+input[type=range]:focus::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(240,120,0,.3)}
+.tot{margin:12px 0 4px}
+.totbar{height:13px;border-radius:7px;background:var(--line);overflow:hidden;display:flex;
+  position:relative;margin-top:6px}
+.totseg{height:100%}
+.totlab{display:flex;justify-content:space-between;font-size:13px;align-items:baseline;gap:10px}
+.totnum{font-weight:700;font-variant-numeric:tabular-nums;font-size:16px}
+.sw{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;font-weight:700;
+  color:var(--tx);user-select:none;white-space:nowrap}
+.sw input{width:17px;height:17px;accent-color:var(--marca);cursor:pointer;margin:0}
+.sw input:disabled{cursor:not-allowed}
+input.fat{width:78px;padding:5px 8px;font-size:13px;text-align:center;font-weight:700;
+  color:var(--marca-clara);border-color:var(--marca)}
+.rel{background:var(--panel);padding:10px 14px;border-radius:8px;margin-bottom:7px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;flex-wrap:wrap}
+button{background:var(--marca);color:var(--marca-tx);border:0;padding:9px 15px;border-radius:7px;
+  cursor:pointer;font-weight:700;font-size:13px;font-family:inherit}
+button:hover{background:var(--marca-clara)}
+button.sec{background:var(--panel);color:var(--tx);border:1px solid var(--line)}
+button.sec:hover{background:var(--panel);border-color:var(--marca)}
+button.dgr{background:var(--erro-fundo);color:var(--erro-tx);border:1px solid #5a2224;padding:5px 11px;font-size:12px}
+button.dgr:hover{background:#431a1c}
+.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin:10px 0}
+.row>div{flex:1;min-width:145px}
+.foot{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);
+  color:var(--tx2);font-size:12px;line-height:1.7}
+/* tabela da base: primeira coluna fica fixa ao rolar para o lado */
+#tBase th:first-child,#tBase td:first-child{position:sticky;left:0;background:var(--panel2);z-index:1}
+#tBase td.cel{cursor:pointer}
+#tBase td.cel:hover{background:var(--marca-fundo)}
+/* elementos que so aparecem no celular */
+.btnCfg,.fecharCfg,.fundoCfg{display:none}
+button,.chip,.tab,summary{touch-action:manipulation}
+
+/* ================= CELULAR ================= */
+@media(max-width:860px){
+  .wrap{display:block}
+  /* configuracoes viram uma gaveta lateral, aberta pelo botao do topo */
+  .side{position:fixed;top:0;left:0;bottom:0;width:86%;max-width:340px;z-index:50;
+    overflow-y:auto;min-height:0;transform:translateX(-100%);transition:transform .2s ease;
+    padding-top:calc(16px + env(safe-area-inset-top,0px));
+    padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));
+    border-right:1px solid var(--line);box-shadow:4px 0 24px rgba(0,0,0,.5)}
+  body.cfg .side{transform:none}
+  body.cfg{overflow:hidden}
+  body.cfg .fundoCfg{display:block;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40}
+  .fecharCfg{display:block;width:100%;margin-bottom:14px;padding:11px}
+
+  /* botao de configuracoes + abas ficam presos no topo ao rolar */
+  .fixoTopo{position:sticky;top:0;z-index:30;background:var(--bg);
+    margin:0 -15px;padding:8px 15px 0;padding-top:calc(8px + env(safe-area-inset-top,0px))}
+  .btnCfg{display:flex;align-items:center;gap:8px;width:100%;padding:11px 13px;
+    font-size:14px;text-align:left}
+  .btnCfg #resumoCfg{margin-left:auto;font-weight:400;color:var(--tx2);font-size:12.5px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:55%}
+  .tabs{flex-wrap:nowrap;gap:0;margin-top:6px;margin-bottom:4px}
+  .tab{flex:1;white-space:normal;text-align:center;padding:10px 6px;font-size:13px;line-height:1.3}
+
+  .main{padding:14px 15px}
+  .marcaTopo .in{padding:7px 15px}
+  .marcaTopo img{height:28px}
+  .marcaTopo .tag{font-size:11px}
+  h1{font-size:22px}
+  .sub{font-size:13px}
+  h2{font-size:17px}
+
+  /* fonte 16px evita o zoom automatico do iPhone ao tocar no campo */
+  select,input[type=text],input[type=number]{font-size:16px;padding:10px}
+  input.fat{font-size:16px}
+  input.pct{width:82px;padding:6px 8px}
+
+  /* titulo dos blocos recolhiveis: resumo desce para a linha de baixo */
+  details.sec>summary{flex-wrap:wrap;font-size:17px}
+  .cnt{flex-basis:100%;max-width:100%;margin-left:24px;text-align:left}
+
+  .chip{padding:8px 14px}
+  .chip.p{padding:7px 12px}
+  .bn{width:100px;font-size:12px}
+  .card .val{font-size:20px}
+  table{font-size:12px}
+
+  /* sliders mais faceis de arrastar com o dedo */
+  input[type=range]{height:34px}
+  input[type=range]::-webkit-slider-runnable-track{height:10px}
+  input[type=range]::-webkit-slider-thumb{width:28px;height:28px;margin-top:-9px}
+  input[type=range]::-moz-range-track{height:10px}
+  input[type=range]::-moz-range-thumb{width:22px;height:22px}
+}
+</style>
+</head>
+<body>
+<header class="marcaTopo"><div class="in">
+  <img src="logo-germinare.png" alt="Germinare" width="242" height="57">
+  <span class="tag">Inteligência em insumos</span>
+</div></header>
+<div class="wrap">
+
+<!-- ============ SIDEBAR ============ -->
+<div class="fundoCfg" onclick="abrirConfig(false)"></div>
+<aside class="side">
+  <button class="sec fecharCfg" onclick="abrirConfig(false)">✕ Fechar e ver resultados</button>
+  <h3>Configurações da Análise</h3>
+  <label>Filtro Zootécnico (Espécie)</label>
+  <select id="especie">
+    <option>Bovinos</option><option>Suínos</option><option selected>Aves</option>
+  </select>
+  <label>Praça de Cotação</label>
+  <input type="text" id="praca" value="Campinas/SP">
+  <label>Formato de Comercialização</label>
+  <select id="embalagem"><option>A Granel</option><option>Ensacado</option></select>
+
+  <h3 id="hcot">Cotações do Dia (R$/ton)</h3>
+  <div id="precos"></div>
+  <p style="font-size:11.5px;color:var(--tx2);margin-top:12px;line-height:1.6">
+    Deixe 0 se não houver cotação. O sistema não calcula custo sem preço.</p>
+
+  <h3>Dados</h3>
+  <p style="font-size:11.5px;color:var(--tx2);line-height:1.6" id="infoDados"></p>
+</aside>
+
+<!-- ============ MAIN ============ -->
+<main class="main">
+  <h1>Nutre Compare <span class="pro">Pro</span></h1>
+  <p class="sub">Comparação nutricional, análise econômica e simulação de formulação</p>
+
+  <div id="avisoTopo"></div>
+
+  <div class="fixoTopo">
+    <button class="sec btnCfg" onclick="abrirConfig(true)">⚙ Cotações e filtros
+      <span id="resumoCfg"></span></button>
+    <div class="tabs">
+      <div class="tab on" data-t="1">Custo-Benefício &amp; Nutrição</div>
+      <div class="tab" data-t="2">Simulador de Formulação</div>
+      <div class="tab" data-t="3">Base de Dados</div>
+    </div>
+  </div>
+
+  <!-- ---------- ABA 1 ---------- -->
+  <section class="pane on" id="p1">
+    <details class="sec" id="d1" open>
+      <summary>Commodities selecionadas para análise <span class="cnt" id="cCom"></span></summary>
+      <div class="chips" id="selCom"></div>
+    </details>
+
+    <h2 id="tEcon">Análise Econômica</h2>
+    <div id="econ"></div>
+
+    <h2>Preço Limite</h2>
+    <div id="limite"></div>
+
+    <details class="sec" id="d2" open>
+      <summary>Comparativo Nutricional Direto <span class="cnt" id="cPar"></span></summary>
+      <p class="sub" style="margin:8px 0 6px">Escolha os parâmetros a exibir:</p>
+      <div class="chips" id="selPar"></div>
+    </details>
+    <div id="barras" style="margin-top:14px"></div>
+  </section>
+
+  <!-- ---------- ABA 2 ---------- -->
+  <section class="pane" id="p2">
+    <h2>Simulador de Formulação</h2>
+    <p class="sub">Percentuais de inclusão em matéria natural, como o ingrediente entra no
+      misturador. O sistema converte os dados de matéria seca antes de somar.<br>
+      <b>Arraste a barra</b> ou <b>toque no número</b> para digitar o valor exato (ex.: 12,5).</p>
+
+    <details class="sec" id="d3" open>
+      <summary>Ingredientes disponíveis <span class="cnt" id="cIng"></span></summary>
+      <div class="chips" id="selIng"></div>
+    </details>
+
+    <h3 class="s">Formulação Original</h3>
+    <div id="formO"></div>
+    <div id="somaO"></div>
+
+    <h3 class="s">Relações de Substituição</h3>
+    <p class="sub" style="margin:0 0 8px">Ingredientes relacionados ficam <b>vinculados nos
+      sliders da formulação reestruturada</b>: ao aumentar um, o outro cai na mesma
+      proporção, ponto por ponto. A formulação original não é afetada — ela é a referência.
+      Substituição <b>física</b>: 1 ponto de A equivale a 1 ponto de B em massa, sem
+      equivalência nutricional.</p>
+    <div class="row">
+      <div><label>Aumentar</label><select id="relDe"></select></div>
+      <div><label>Reduzindo</label><select id="relPara"></select></div>
+      <div style="flex:0"><button onclick="criarRel()">Criar relação</button></div>
+    </div>
+    <div id="rels"></div>
+
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0 4px">
+      <h3 class="s" style="margin:0">Formulação Reestruturada</h3>
+      <button class="sec" onclick="copiarOriginal()">📋 Copiar da original</button>
+      <span class="mut" style="font-size:12.5px">deixa as duas iguais, como ponto de partida</span>
+    </div>
+    <p class="sub" style="margin:0 0 4px"><b>🔓 livre</b>: o ajuste automático pode alterar ·
+      <b>🔒 travado</b>: fica como você definiu.</p>
+    <div id="formR"></div>
+    <div id="somaR"></div>
+
+    <div id="otim" class="painel"></div>
+
+    <div id="comparacao"></div>
+  </section>
+
+  <!-- ---------- ABA 3 ---------- -->
+  <section class="pane" id="p3">
+    <h2>Banco de Dados Nutricional</h2>
+    <p class="sub" id="resumoBase"></p>
+    <div class="scroll"><table id="tBase"></table></div>
+    <div id="detFonte" class="info" style="margin-top:10px">Toque em um valor da tabela para ver a fonte.</div>
+    <div id="avisoProv"></div>
+    <h3 class="s">Fontes utilizadas</h3>
+    <div id="listaFontes"></div>
+  </section>
+
+  <div class="foot">
+    Nutre Compare Pro v3.0 — Germinare. Versão de teste para o time comercial.<br>
+    Cada resultado mostra a conta em "Como essa conta é feita?". Encontrou algo estranho?
+    Anote a tela, os preços usados e o que esperava ver.
+  </div>
+</main>
+</div>
+
+<!-- Dados nutricionais e contas ficam em arquivos próprios.
+     Os três arquivos precisam estar na mesma pasta. -->
+<script src="dados.js"></script>
+<script src="calculos.js"></script>
+<script>
+/* =================================================================
+   TELA — só desenha e reage a cliques. Nenhuma conta mora aqui:
+   as contas estão em calculos.js e os dados em dados.js.
+   ================================================================= */
+
+/* ================= ESTADO ================= */
+let precos={...PRECOS_INI};
+let sel=["Farelo de Soja","DDGS"];
+let pars=["Proteína Bruta","Fibra Bruta","FDN","Extrato Etéreo","NDT"];
+/* Ingredientes que existem SÓ no simulador: entram no total da ração, mas não
+   têm perfil nutricional nem preço (decisão do Nathan, v3). Ficam sempre com o
+   mesmo percentual na original e na reestruturada, para a comparação valer. */
+const EXTRAS=["Núcleo + Ureia"];
+const EXTRA_PADRAO=5;
+const TODOS=[...COMS,...EXTRAS];
+function corDe(c){return CORES[c]||"#9A938C"}
+function ehExtra(c){return EXTRAS.includes(c)}
+
+let ings=["Milho","Farelo de Soja","DDGS","Sorgo","Núcleo + Ureia"];
+let fO={"Milho":50,"Farelo de Soja":20,"DDGS":10,"Sorgo":15,"Núcleo + Ureia":5};
+let fR={"Milho":45,"Farelo de Soja":15,"DDGS":20,"Sorgo":15,"Núcleo + Ureia":5};
+let rels=[];
+/* v3: cadeados da reestruturada e ajuste automático */
+let travas={};                       // ingrediente -> true se travado
+let otim={nutriente:"Proteína Bruta",tol:1,res:null};
+let normalizar=false;
+let parsSim=["Proteína Bruta","Energia Metabolizável - Aves","Fibra Bruta","FDN","Cálcio"];
+let abertos={crit:true,simpar:true};
+function tgParSim(n){
+  parsSim.includes(n)?parsSim=parsSim.filter(x=>x!==n):parsSim.push(n);
+  parsSim=P.map(p=>p[0]).filter(x=>parsSim.includes(x));   // mantem a ordem da base
+  renderDeps();
+}
+let refC=null, avalC=null, criterio="Proteína Bruta";
+
+/* parâmetro de energia da espécie escolhida na tela */
+function paramEnergia(){return "Energia Metabolizável - "+document.getElementById("especie").value}
+
+/* ================= RENDER: memorial ================= */
+function memoHTML(m){
+  let h='<div class="memo">';
+  if(m.blk) h+=`<div class="blk"><b>Cálculo não realizado:</b> ${m.blk}</div>`;
+  if(m.ent&&m.ent.length){h+="<b>Valores utilizados</b><ul>";
+    m.ent.forEach(e=>h+=`<li>${e[0]}: <b>${e[1]}</b></li>`);h+="</ul>"}
+  if(m.form) h+=`<b>Fórmula</b><code>${m.form}</code>`;
+  if(m.passos&&m.passos.length){h+="<b>Desenvolvimento</b><ul>";
+    m.passos.forEach(p=>h+=`<li>${p}</li>`);h+="</ul>"}
+  if(m.res) h+=`<b>Resultado:</b> ${m.res}`;
+  (m.avisos||[]).forEach(a=>h+=`<div style="margin-top:5px">⚠ ${a}</div>`);
+  return h+"</div>";
+}
+function card(lab,val,dl,cls,m){
+  return `<div class="card"><div class="lab">${lab}</div><div class="val">${val}</div>`+
+    (dl?`<div class="dl ${cls||"mut"}">${dl}</div>`:"")+
+    (m?`<details><summary>Como essa conta é feita?</summary>${memoHTML(m)}</details>`:"")+
+    `</div>`;
+}
+
+/* ================= SIDEBAR ================= */
+function buildPrecos(){
+  document.getElementById("precos").innerHTML=COMS.map(c=>
+    `<label>${c}</label><input type="number" step="50" min="0" value="${precos[c]}"
+      oninput="precos['${c}']=parseFloat(this.value)||0;render()">`).join("");
+}
+
+/* ================= ABA 1 ================= */
+function resumo(lista,total){
+  if(!lista.length) return "nenhum selecionado";
+  const t=lista.join(", ");
+  return `${lista.length} de ${total}: ${t}`;
+}
+function renderSel(){
+  document.getElementById("selCom").innerHTML=COMS.map(c=>
+    `<div class="chip ${sel.includes(c)?"on":""}" onclick="tgSel('${c}')">${sel.includes(c)?"☑":"☐"} ${c}</div>`).join("");
+  const lp=P.map(p=>p[0]).filter(n=>!n.startsWith("Energia Metabolizável")||n===paramEnergia());
+  document.getElementById("selPar").innerHTML=lp.map(n=>
+    `<div class="chip p ${pars.includes(n)?"on":""}" onclick="tgPar('${n.replace(/'/g,"\\'")}')">${n}</div>`).join("");
+  document.getElementById("cCom").textContent=resumo(sel,COMS.length);
+  document.getElementById("cPar").textContent=resumo(pars.filter(n=>lp.includes(n)),lp.length);
+}
+function tgSel(c){ sel.includes(c)?sel=sel.filter(x=>x!==c):sel.push(c);
+  sel=COMS.filter(x=>sel.includes(x)); refC=avalC=null; render()}
+function tgPar(n){ pars.includes(n)?pars=pars.filter(x=>x!==n):pars.push(n); render()}
+
+function renderEcon(){
+  document.getElementById("tEcon").textContent=
+    `Análise Econômica — Praça: ${document.getElementById("praca").value} | Formato: ${document.getElementById("embalagem").value}`;
+  const el=document.getElementById("econ");
+  if(!sel.length){el.innerHTML='<div class="info">Selecione ao menos uma commodity.</div>';return}
+  const crits=["Proteína Bruta",paramEnergia()];
+  el.innerHTML=crits.map(cr=>{
+    const cards=sel.map(c=>{const r=custoPorNutriente(c,cr,precos[c]);
+      return card(c,r.v===null?"N/D":brl(r.v),r.un||"",null,r.m)}).join("");
+    return `<h3 class="s">Custo por unidade de ${cr}</h3><div class="grid">${cards}</div>`;
+  }).join("");
+}
+
+function renderLimite(){
+  const el=document.getElementById("limite");
+  if(sel.length<2){el.innerHTML='<div class="info">Selecione ao menos duas commodities para calcular o preço limite.</div>';return}
+  if(!refC||!sel.includes(refC)) refC=sel[0];
+  if(!avalC||!sel.includes(avalC)||avalC===refC) avalC=sel.find(c=>c!==refC);
+  const comuns=P.filter(p=>get(refC,p[0]).v!==null&&get(avalC,p[0]).v!==null)
+    .map(p=>p[0]).filter(n=>!n.startsWith("Energia Metabolizável")||n===paramEnergia());
+  if(!comuns.includes(criterio)) criterio=comuns.includes("Proteína Bruta")?"Proteína Bruta":comuns[0];
+  let h=`<div class="row">
+    <div><label>Commodity de referência</label><select onchange="refC=this.value;avalC=null;render()">
+      ${sel.map(c=>`<option ${c===refC?"selected":""}>${c}</option>`).join("")}</select></div>
+    <div><label>Commodity avaliada</label><select onchange="avalC=this.value;render()">
+      ${sel.filter(c=>c!==refC).map(c=>`<option ${c===avalC?"selected":""}>${c}</option>`).join("")}</select></div>
+    <div style="flex:0"><button class="sec" onclick="const t=refC;refC=avalC;avalC=t;render()">🔄 Inverter comparação</button></div>
+  </div>`;
+  if(!comuns.length){el.innerHTML=h+'<div class="alert">Não há parâmetro com dado disponível para os dois produtos.</div>';return}
+  h+=`<details class="sub2" ${abertos.crit?"open":""} ontoggle="abertos.crit=this.open">
+    <summary>Critério de comparação — <b style="color:var(--tx)">${criterio}</b></summary>
+    <div class="chips">`+
+    comuns.map(n=>`<div class="chip p ${n===criterio?"on":""}" onclick="criterio='${n.replace(/'/g,"\\'")}';render()">${n}</div>`).join("")+
+    `</div></details>`;
+  const r=precoLimite(refC,avalC,criterio,precos[refC]);
+  let cards=card(`Preço limite de ${avalC}`,r.v===null?"N/D":brl(r.v),`critério: ${criterio}`,"mut",r.m);
+  if(r.v!==null&&precos[avalC]>0){
+    const d=r.v-precos[avalC];
+    cards+=card("Situação do preço atual",brl(precos[avalC]),
+      d>=0?`🟢 Margem de ${brl(d)}`:`🔴 Acima em ${brl(Math.abs(d))}`,d>=0?"up":"dn");
+  }
+  const fx=faixa(refC,avalC);
+  if(fx&&precos[refC]>0&&precos[avalC]>0){
+    const rel=precos[avalC]/precos[refC]*100;
+    const st=rel<fx.verde?"🟢 Favorável":(rel<fx.amarelo?"🟡 Atenção":"🔴 Desfavorável");
+    cards+=card(`Relação ${avalC}/${refC}`,fmt(rel)+"%",st,rel<fx.verde?"up":(rel<fx.amarelo?"mut":"dn"),
+      {ent:[[`Preço de ${avalC}`,brl(precos[avalC])],[`Preço de ${refC}`,brl(precos[refC])]],
+       form:"Relação = preço do avaliado / preço da referência",
+       passos:[`${brl(precos[avalC])} / ${brl(precos[refC])} = ${fmt(rel)}%`,
+               `Faixa verde até ${fmt(fx.verde)}%, amarela até ${fmt(fx.amarelo)}%.`],
+       res:`${fmt(rel)}% — ${st}`,
+       avisos:[`Origem da regra: ${fx.fonte}`]});
+  }else if(precos[refC]>0&&precos[avalC]>0){
+    cards+=`<div class="card"><div class="lab">Relação ${avalC}/${refC}</div>
+      <div class="dl mut" style="margin-top:8px;line-height:1.6">Sem faixa cadastrada para este par.
+      O semáforo só aparece para pares com regra registrada na planilha — para não sugerir
+      uma regra que não existe.</div></div>`;
+  }
+  el.innerHTML=h+`<div class="grid">${cards}</div>`;
+}
+
+function renderBarras(){
+  const el=document.getElementById("barras");
+  if(!sel.length||!pars.length){el.innerHTML='<div class="info">Selecione commodities e parâmetros.</div>';return}
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(330px,100%),1fr));gap:22px">`+
+    pars.map(p=>{
+      const mt=meta(p); const vs=sel.map(c=>get(c,p));
+      const disp=vs.filter(v=>v.v!==null).map(v=>v.v);
+      const mx=disp.length?Math.max(...disp)*1.15:1;
+      const bars=sel.map((c,i)=>{const v=vs[i];
+        const pc=v.v!==null&&mx>0?Math.min(v.v/mx*100,100):0;
+        return `<div class="bar"><div class="bn" style="color:${CORES[c]}">${c}${v.prov&&v.v!==null?'<span class="prov">*</span>':""}</div>
+          <div class="bt"><div class="bf" style="width:${pc}%;background:${CORES[c]}"></div></div>
+          <div class="bv">${v.v===null?'<span class="prov">N/D</span>':fmt(v.v)}</div></div>`}).join("");
+      return `<div><div style="font-weight:700;margin-bottom:7px">${p}
+        <span style="font-weight:400;color:var(--tx2);font-size:12.5px">(${mt.un} — base ${mt.base})</span></div>
+        <div class="bars">${bars}</div></div>`}).join("")+`</div>
+    <p class="sub" style="margin-top:4px">${contarProv()?'<span class="prov">*</span> dado provisório. ':""}
+    Barras usam o valor na base original do parâmetro.</p>`;
+}
+
+/* ================= ABA 2 ================= */
+function renderIngs(){
+  document.getElementById("selIng").innerHTML=TODOS.map(c=>
+    `<div class="chip ${ings.includes(c)?"on":""}" onclick="tgIng('${c}')">${ings.includes(c)?"☑":"☐"} ${c}</div>`).join("");
+  document.getElementById("cIng").textContent=resumo(ings,TODOS.length);
+  ["relDe","relPara"].forEach(id=>{
+    const s=document.getElementById(id);
+    s.innerHTML=ings.filter(c=>!ehExtra(c)).map(c=>`<option>${c}</option>`).join("");
+  });
+}
+function tgIng(c){
+  if(ings.includes(c)){ings=ings.filter(x=>x!==c);delete fO[c];delete fR[c];delete travas[c];
+    rels=rels.filter(r=>r.de!==c&&r.para!==c)}
+  else{ings.push(c);ings=TODOS.filter(x=>ings.includes(x));
+    fO[c]=fR[c]=ehExtra(c)?EXTRA_PADRAO:0}
+  otim.res=null;
+  render();
+}
+function tgTrava(c){travas[c]=!travas[c]; render()}
+function linhasForm(f,pref){
+  return ings.map(c=>{const v=f[c]||0, i=TODOS.indexOf(c), ex=ehExtra(c);
+    const par=(pref==="fR")?parceirosDe(c):[];
+    let tag=par.length?`<span class="lnk" title="vinculado a ${par.join(", ")}">🔗 ${par.join(", ")}</span>`:"";
+    if(ex) tag+=`<span class="lnk">${pref==="fR"?"🔒 fixo, igual à original":"sem perfil nutricional · fora do custo"}</span>`;
+    /* cadeado: só na reestruturada. Travado = o ajuste automático não mexe. */
+    const cad=(pref!=="fR")?"":(ex
+      ? `<button class="trava on" disabled title="Sempre igual à original">🔒</button>`
+      : `<button class="trava ${travas[c]?"on":""}" onclick="tgTrava('${c}')" aria-pressed="${!!travas[c]}"
+           title="${travas[c]?"Travado: o ajuste automático não mexe. Toque para destravar.":"Livre: o ajuste automático pode alterar. Toque para travar."}">${travas[c]?"🔒":"🔓"}</button>`);
+    const bloq=(pref==="fR"&&ex)?"disabled":"";
+    return `<div class="frow">
+      <div class="fhead"><span class="fnome" style="color:${corDe(c)}">${cad}${c}${tag}</span>
+        <span class="fval"><input type="text" inputmode="decimal" class="pct" id="v-${pref}-${i}" ${bloq}
+          value="${fmt(v)}" aria-label="Percentual de ${c}" title="Toque para digitar o valor"
+          onfocus="this.select()" onkeydown="teclaPct(event,this)"
+          onchange="onDigitar('${pref}',${i},this)">%</span></div>
+      <input type="range" id="s-${pref}-${i}" min="0" max="100" step="0.5" value="${v}" ${bloq}
+        oninput="onSlide('${pref}',${i},this)">
+      <div class="fmsg" id="m-${pref}-${i}"></div></div>`}).join("");
+}
+/* o ingrediente extra da reestruturada acompanha sempre o da original */
+function espelharExtras(){EXTRAS.forEach(c=>{if(ings.includes(c)) fR[c]=fO[c]||0})}
+
+/* Vínculos entre ingredientes: a regra está em calculos.js (vinculosDe,
+   moverVinculado). Aqui só a etiqueta 🔗 mostrada ao lado do nome. */
+function parceirosDe(c){return vinculosDe(c,rels,ings).map(v=>v.p)}
+
+function copiarOriginal(){
+  ings.forEach(c=>fR[c]=fO[c]||0);
+  render();
+}
+
+/* O slider so atualiza o que depende dele. Se render() reconstruisse as
+   linhas a cada movimento, o elemento seria destruido e o arrasto travaria. */
+function onSlide(pref,i,el){
+  const c=TODOS[i];
+  if(pref==="fR") moverVinculado(fR,c,parseFloat(el.value)||0,rels,ings);
+  else fO[c]=arred(Math.max(0,Math.min(100,parseFloat(el.value)||0)));
+  const msg=document.getElementById(`m-${pref}-${i}`); if(msg) msg.textContent="";
+  sincronizar(pref,i);
+  if(pref==="fO"&&ehExtra(c)){espelharExtras();sincronizar("fR",-1)}
+  renderDeps();
+}
+
+/* Valor digitado no campo ao lado do slider. Só aplica ao confirmar
+   (Enter ou tocar fora), nunca a cada tecla. Na reestruturada passa pelos
+   mesmos vínculos e limites do slider. Texto inválido NÃO vira zero:
+   o valor anterior volta e a pessoa é avisada. */
+function onDigitar(pref,i,el){
+  const c=TODOS[i], f=(pref==="fO")?fO:fR;
+  const msg=document.getElementById(`m-${pref}-${i}`);
+  const antes=f[c]||0, digitado=el.value;
+  const x=lerPercentual(digitado);
+  if(x===null){
+    el.value=fmt(antes);
+    msg.textContent=`⚠ Não entendi “${digitado}”. Mantido ${fmt(antes)}%. Digite um número, como 12,5.`;
+    return;
+  }
+  const pedido=arred(Math.max(0,Math.min(100,x)));
+  const aplicado=(pref==="fR")?moverVinculado(fR,c,pedido,rels,ings):(fO[c]=pedido);
+  let aviso="";
+  if(x<0||x>100) aviso=`O percentual vai de 0 a 100. Ajustado para ${fmt(aplicado)}%.`;
+  else if(Math.abs(aplicado-pedido)>0.001) aviso=`Ajustado para ${fmt(aplicado)}% em vez de ${fmt(pedido)}%: `+
+    `a relação de substituição ativa limita o movimento — o ingrediente vinculado não tem mais o `+
+    `que ceder, ou o total passaria de 100%.`;
+  msg.textContent=aviso?"⚠ "+aviso:"";
+  sincronizar(pref,-1);
+  if(pref==="fO"&&ehExtra(c)){espelharExtras();sincronizar("fR",-1)}
+  renderDeps();
+}
+function teclaPct(e,el){
+  if(e.key==="Enter") el.blur();
+  if(e.key==="Escape"){const c=TODOS[+el.id.split("-")[2]], f=el.id.includes("-fO-")?fO:fR;
+    el.value=fmt(f[c]||0);el.blur()}
+}
+/* Atualiza numeros e posicoes dos demais sliders sem tocar no que esta sendo arrastado. */
+function sincronizar(pref,ignorar){
+  const f=(pref==="fO")?fO:fR;
+  ings.forEach(c=>{
+    const i=TODOS.indexOf(c);
+    const lab=document.getElementById(`v-${pref}-${i}`);
+    const sl=document.getElementById(`s-${pref}-${i}`);
+    if(lab) lab.value=fmt(f[c]||0);
+    if(sl && i!==ignorar) sl.value=f[c]||0;
+  });
+}
+function renderDeps(){
+  document.getElementById("somaO").innerHTML=somaHTML(fO,"original");
+  document.getElementById("somaR").innerHTML=somaHTML(fR,"reestruturada");
+  renderOtimStatus();
+  renderComp();
+}
+
+/* ================= AJUSTE AUTOMÁTICO (v3) =================
+   A conta está em calculos.js (completarPorCusto). Aqui só a tela. */
+function subIngs(f){const r={};ings.forEach(c=>r[c]=f[c]||0);return r}
+function renderOtim(){
+  const mt=meta(otim.nutriente);
+  document.getElementById("otim").innerHTML=`
+    <h3 class="s" style="margin-top:0">Ajuste automático</h3>
+    <p class="sub" style="margin:0 0 10px">Trave com o cadeado <b>🔒</b> os ingredientes que você já definiu.
+      O sistema calcula os <b>🔓 livres</b> para fechar a ração no mesmo total da original, mantendo
+      a <b>${otim.nutriente}</b> perto da original e escolhendo a combinação <b>mais barata</b>
+      pelas cotações do dia.</p>
+    <div class="row" style="align-items:center;margin:0 0 6px">
+      <div style="flex:0 0 auto;min-width:0"><label style="margin-top:0">Manter</label>
+        <div style="font-weight:700;padding:8px 0">${otim.nutriente}</div></div>
+      <div style="flex:0 0 auto;min-width:0"><label style="margin-top:0" for="otimTol">Tolerância (± pontos de ${mt?mt.un:"%"})</label>
+        <input type="text" inputmode="decimal" id="otimTol" value="${fmt(otim.tol)}" style="width:110px;text-align:right"
+          onfocus="this.select()" onkeydown="if(event.key==='Enter')this.blur()" onchange="setTol(this)"></div>
+      <div style="flex:1 1 220px"><button onclick="executarOtim()" style="width:100%;padding:11px 15px">
+        ⚙ Completar automaticamente</button></div>
+    </div>
+    <div class="fmsg" id="otimTolMsg"></div>
+    <div id="otimStatus"></div>
+    <div id="otimRes"></div>`;
+  renderOtimStatus(); renderOtimRes();
+}
+function setTol(el){
+  const x=lerPercentual(el.value), msg=document.getElementById("otimTolMsg");
+  if(x===null||x<0){el.value=fmt(otim.tol);
+    msg.textContent=`⚠ Tolerância inválida. Mantida em ${fmt(otim.tol)}. Use um número como 1 ou 0,5.`;return}
+  otim.tol=arred(x); el.value=fmt(otim.tol); msg.textContent=""; renderOtimStatus();
+}
+/* situação ao vivo: a reestruturada está ou não dentro da tolerância? */
+function renderOtimStatus(){
+  const el=document.getElementById("otimStatus"); if(!el) return;
+  const so=totalDe(fO,ings), sr=totalDe(fR,ings), mt=meta(otim.nutriente);
+  const a=nutriFormulacao(subIngs(fO),otim.nutriente,EXTRAS).v, b=nutriFormulacao(subIngs(fR),otim.nutriente,EXTRAS).v;
+  if(a===null||b===null||so<=0){el.innerHTML="";return}
+  const d=b-a, dentro=Math.abs(d)<=otim.tol+0.005, fecha=Math.abs(so-sr)<0.011;
+  const livres=ings.filter(c=>!travas[c]&&!ehExtra(c));
+  el.innerHTML=`<div class="${dentro&&fecha?"okmsg":"alert"}" style="margin:10px 0 0">
+    <b>${otim.nutriente}:</b> original ${fmt(a)} ${mt.un} · reestruturada ${fmt(b)} ${mt.un} ·
+    diferença ${arred(d)>0?"+":""}${fmt(d)} ponto${Math.abs(arred(d))===1?"":"s"} →
+    <b>${dentro?"dentro":"fora"} da tolerância</b> (±${fmt(otim.tol)}).
+    ${fecha?"":`<br>Totais diferentes: original ${fmt(so)}%, reestruturada ${fmt(sr)}%.`}
+    <br><span style="opacity:.85">Livres para o ajuste: ${livres.length?livres.join(", "):"nenhum — destrave pelo menos um"}.</span></div>`;
+}
+function renderOtimRes(){
+  const el=document.getElementById("otimRes"); if(!el) return;
+  const r=otim.res; if(!r){el.innerHTML="";return}
+  el.innerHTML=r.f
+    ? `<div class="card" style="margin-top:10px"><div class="lab">Último ajuste automático</div>
+        <div style="font-size:14px;line-height:1.6">${r.m.res}</div>
+        <details><summary>Como essa conta é feita?</summary>${memoHTML(r.m)}</details></div>`
+    : `<div class="errmsg" style="margin-top:10px"><b>Não foi possível ajustar:</b> ${r.m.blk}</div>`;
+}
+function executarOtim(){
+  espelharExtras();
+  const r=completarPorCusto({fOrig:subIngs(fO),fAtual:subIngs(fR),ings,
+    travados:ings.filter(c=>travas[c]),semPerfil:EXTRAS,precos,
+    nutriente:otim.nutriente,tol:otim.tol});
+  otim.res=r;
+  if(r.f){fR=r.f; render()} else renderOtimRes();
+}
+
+/* A soma NAO precisa dar 100%. Uma soma menor significa que o restante da
+   racao e composto por ingredientes fora desta analise. Acima de 100% e
+   impossivel e fica bloqueado. */
+function somaHTML(f,nome){
+  const s=totalDe(f,ings);
+  const segs=ings.filter(c=>(f[c]||0)>0).map(c=>
+    `<div class="totseg" style="width:${Math.min(f[c],100)}%;background:${corDe(c)}"></div>`).join("");
+  const resto=Math.max(0,100-s);
+  let cor,msg;
+  if(s>100.001){cor="var(--erro)";
+    msg=`<span class="dn">Acima de 100%. Nenhuma ração pode ter mais de 100% de si mesma — reduza ${fmt(s-100)} pontos.</span>`;}
+  else if(Math.abs(s-100)<0.001){cor="var(--ok)";
+    msg=`<span class="up">Formulação completa: todos os ingredientes estão descritos.</span>`;}
+  else{cor="var(--aviso)";
+    msg=`<span class="mut">Faltam ${fmt(resto)}% para fechar a ração — tratados como <b>outros ingredientes</b>, fora desta análise.</span>`;}
+  return `<div class="tot">
+    <div class="totlab"><span>Total da formulação ${nome}</span>
+      <span class="totnum" style="color:${cor}">${fmt(s)}%</span></div>
+    <div class="totbar">${segs}</div>
+    <div style="font-size:12.5px;margin-top:6px;line-height:1.55">${msg}</div></div>`;
+}
+function criarRel(){
+  const de=document.getElementById("relDe").value;
+  const para=document.getElementById("relPara").value;
+  if(de===para){alert("Escolha ingredientes diferentes.");return}
+  if(rels.some(r=>(r.de===de&&r.para===para)||(r.de===para&&r.para===de))){
+    alert("Essa relação já existe.");return}
+  rels.push({de,para,ratio:1,on:false}); render();
+}
+function rmRel(i){rels.splice(i,1);render()}
+function setRatio(i,v){
+  const x=parseFloat(String(v).replace(",","."));
+  if(!isFinite(x)||x<=0){alert("O fator precisa ser maior que zero.");render();return}
+  rels[i].ratio=Math.round(x*1000)/1000; render();
+}
+function toggleRel(i,on){rels[i].on=on; render()}
+function renderRels(){
+  const el=document.getElementById("rels");
+  if(!rels.length){el.innerHTML=
+    '<p class="sub">Nenhuma relação criada. Sem relação ativa, cada slider se move sozinho.</p>';return}
+  el.innerHTML=rels.map((r,i)=>{
+    const vale=ings.includes(r.de)&&ings.includes(r.para);
+    const saldo=1-r.ratio;
+    const efeito=Math.abs(saldo)<1e-9
+      ? "total da formulação não muda"
+      : (saldo>0?`total sobe ${fmt(saldo)} ponto a cada 1 ponto de ${r.de}`
+                :`total cai ${fmt(-saldo)} ponto a cada 1 ponto de ${r.de}`);
+    return `<div class="rel" style="${r.on?"":"opacity:.62"}">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <label class="sw"><input type="checkbox" ${r.on?"checked":""} ${vale?"":"disabled"}
+          onchange="toggleRel(${i},this.checked)"><span>${r.on?"Ativa":"Ativar"}</span></label>
+        <div><b style="color:${CORES[r.de]}">${r.de}</b>
+          &nbsp;◀————▶&nbsp;
+          <b style="color:${CORES[r.para]}">${r.para}</b></div>
+      </div>
+      <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
+        <span class="mut" style="font-size:12px">1 ponto de ${r.de} =</span>
+        <input type="number" class="fat" min="0.01" step="0.1" value="${r.ratio}"
+          onchange="setRatio(${i},this.value)">
+        <span class="mut" style="font-size:12px">de ${r.para}</span>
+        <span style="width:10px"></span>
+        <button class="dgr" onclick="rmRel(${i})">Remover</button>
+      </div>
+      <div style="flex-basis:100%;font-size:12px;color:var(--tx2);margin-top:2px">
+        ${vale?efeito:"<span class='dn'>Ingrediente fora da seleção atual — relação inativa.</span>"}</div>
+    </div>`}).join("")+
+    `<p class="sub" style="margin-top:6px">O vínculo vale só para a formulação
+     reestruturada e só entre pares com relação ativa — os demais ingredientes ficam parados.</p>`;
+}
+function renderComp(){
+  const el=document.getElementById("comparacao");
+  const so=totalDe(fO,ings), sr=totalDe(fR,ings);
+  if(so>100.001||sr>100.001){
+    el.innerHTML=`<div class="errmsg" style="margin-top:20px">
+      Uma das formulações passa de 100%. Reduza antes de comparar.</div>`;return}
+  if(so<=0||sr<=0){
+    el.innerHTML=`<div class="info" style="margin-top:20px">
+      Mova os sliders das duas formulações para ver a comparação.</div>`;return}
+
+  /* Escala usada nos calculos. Sem normalizar, os numeros sao a CONTRIBUICAO
+     dos ingredientes selecionados para a racao inteira. Normalizando, sao o
+     perfil da mistura apenas desses ingredientes, reescalada para 100%. */
+  const fo={},fr={};
+  const ko=normalizar?100/so:1, kr=normalizar?100/sr:1;
+  ings.forEach(c=>{fo[c]=(fO[c]||0)*ko; fr[c]=(fR[c]||0)*kr});
+
+  const parcial=(so<99.999||sr<99.999);
+  const co=custoFormulacao(fo,precos,EXTRAS), cr=custoFormulacao(fr,precos,EXTRAS);
+
+  let h=`<h2>Comparação — Original × Reestruturada</h2>`;
+
+  const exs=EXTRAS.filter(c=>ings.includes(c)&&((fO[c]||0)>0||(fR[c]||0)>0));
+  if(exs.length) h+=`<div class="info"><b>${exs.map(c=>`${c} (${fmt(fO[c]||0)}%)`).join(", ")}</b>
+    conta no total da ração, mas <b>não entra no custo nem nos nutrientes</b>: não há preço nem
+    perfil nutricional cadastrado. Os valores abaixo são dos demais ingredientes. Como o percentual é o
+    mesmo nas duas formulações, a <b>diferença</b> entre elas continua correta.</div>`;
+
+  if(parcial&&Math.abs(so-sr)>0.001){
+    h+=`<div class="errmsg"><b>Atenção: as duas formulações somam valores diferentes
+      (${fmt(so)}% e ${fmt(sr)}%).</b> Sem normalizar, você está comparando quantidades
+      diferentes de ração, e a diferença de custo vai refletir isso, não a troca de
+      ingredientes. Iguale os totais ou ative a normalização abaixo.</div>`;
+  }
+
+  if(parcial){
+    h+=`<div class="alert"><b>Base do cálculo.</b> ` + (normalizar
+      ? `Os totais foram reescalados para 100%. Os números abaixo descrevem
+         <b>a mistura apenas destes ingredientes</b>, como se ela fosse a ração inteira.
+         Útil para comparar os ingredientes entre si.`
+      : `As formulações somam ${fmt(so)}% e ${fmt(sr)}%. Os números abaixo são a
+         <b>contribuição destes ingredientes para a ração completa</b>, não o perfil da
+         ração. O custo é quanto estes ingredientes custam por tonelada de ração pronta;
+         o restante da ração não entra na conta.`) +
+      `</div>
+      <label style="display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--tx);
+        cursor:pointer;margin:10px 0 14px">
+        <input type="checkbox" ${normalizar?"checked":""}
+          onchange="normalizar=this.checked;renderDeps()"
+          style="width:17px;height:17px;accent-color:var(--marca);cursor:pointer">
+        Normalizar as duas formulações para 100%</label>`;
+  }
+
+  const sufCusto=parcial&&!normalizar?"parcial, por tonelada de ração":"por tonelada";
+  h+=`<div class="grid">`;
+  h+=card("Custo Original",co.v===null?"N/D":brl(co.v),sufCusto,"mut",co.m);
+  h+=card("Custo Reestruturada",cr.v===null?"N/D":brl(cr.v),sufCusto,"mut",cr.m);
+  if(co.v!==null&&cr.v!==null){
+    const d=co.v-cr.v, pc=co.v?d/co.v*100:0;
+    h+=card("Diferença",d>=0?brl(d):"−"+brl(Math.abs(d)),
+      d>=0?"🟢 mais barata":"🔴 mais cara",d>=0?"up":"dn",
+      {ent:[["Custo original",brl(co.v)],["Custo reestruturada",brl(cr.v)]],
+       form:"Diferença = custo original − custo reestruturada",
+       passos:[`${brl(co.v)} − ${brl(cr.v)} = ${brl(d)}`],
+       res:d>=0?`economia de ${brl(d)} por tonelada`:`aumento de ${brl(Math.abs(d))} por tonelada`,
+       avisos:["Valor positivo = reestruturada mais barata. Negativo = mais cara. O sinal não é invertido."].concat(
+         parcial&&!normalizar?["Comparação em base parcial: só os ingredientes selecionados entram."]:[])});
+    h+=card("Diferença %",(d>=0?"":"−")+fmt(Math.abs(pc))+"%",
+      d>=0?"🟢 economia":"🔴 aumento de custo",d>=0?"up":"dn");
+  }
+  h+=`</div>`;
+
+  /* Comparacao nutricional no mesmo padrao visual da aba 1: barras, com
+     selecao de parametros recolhivel. */
+  const lp=P.map(x=>x[0]).filter(n=>!n.startsWith("Energia Metabolizável")||n===paramEnergia());
+  // um parametro de energia selecionado acompanha a especie atual
+  const parsN=parsSim.map(n=>n.startsWith("Energia Metabolizável")?paramEnergia():n);
+  h+=`<details class="sec" ${abertos.simpar?"open":""} ontoggle="abertos.simpar=this.open">
+    <summary>Comparação Nutricional <span class="cnt">${resumo(lp.filter(n=>parsN.includes(n)),lp.length)}</span></summary>
+    <p class="sub" style="margin:8px 0 6px">Escolha os parâmetros a exibir:</p>
+    <div class="chips">`+
+    lp.map(n=>`<div class="chip p ${parsN.includes(n)?"on":""}" onclick="tgParSim('${n.replace(/'/g,"\\'")}')">${n}</div>`).join("")+
+    `</div></details>`;
+
+  if(parcial&&!normalizar)
+    h+=`<p class="sub" style="margin:10px 0 2px">Valores = pontos que estes ingredientes
+      aportam à ração completa. Exceto PDR e PNDR, que são razões sobre a proteína e
+      não dependem da base.</p>`;
+
+  const exibir=lp.filter(n=>parsN.includes(n));
+  if(!exibir.length){
+    h+=`<div class="info">Nenhum parâmetro selecionado.</div>`;
+  }else{
+    h+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(330px,100%),1fr));gap:22px;margin-top:14px">`;
+    exibir.forEach(p=>{
+      const mt=meta(p);
+      const a=nutriFormulacao(fo,p,EXTRAS), b=nutriFormulacao(fr,p,EXTRAS);
+      const disp=[a.v,b.v].filter(x=>x!==null);
+      const mx=disp.length?Math.max(...disp)*1.15:1;
+      const linha=(nome,val,cor)=>{
+        const pc=(val!==null&&mx>0)?Math.min(Math.max(val/mx*100,0),100):0;
+        return `<div class="bar"><div class="bn" style="color:${cor}">${nome}</div>
+          <div class="bt"><div class="bf" style="width:${pc}%;background:${cor}"></div></div>
+          <div class="bv">${val===null?'<span class="prov">N/D</span>':fmt(val)}</div></div>`;
+      };
+      const da=(a.v!==null&&b.v!==null)?b.v-a.v:null;
+      const dp=(da!==null&&a.v)?da/a.v*100:null;
+      const cls=da===null?"mut":(da>0?"up":(da<0?"dn":"mut"));
+      const dif=da===null?'<span class="mut">diferença N/D</span>'
+        :`<span class="${cls}">${da>0?"+":""}${fmt(da)} ${mt.un}`+
+         (dp===null?"":` (${dp>0?"+":""}${fmt(dp)}%)`)+`</span>`;
+      h+=`<div><div style="font-weight:700;margin-bottom:7px">${p}
+        <span style="font-weight:400;color:var(--tx2);font-size:12.5px">(${mt.un} — base ${mt.base})</span></div>
+        <div class="bars" style="margin-bottom:6px">
+          ${linha("Original",a.v,"var(--serie-original)")}
+          ${linha("Reestruturada",b.v,"var(--serie-nova)")}
+        </div>
+        <div style="font-size:12.5px;margin-bottom:14px">${dif}</div></div>`;
+    });
+    h+=`</div>`;
+  }
+  const alvo=nutriFormulacao(fo,"PNDR",EXTRAS);
+  h+=`<h3 class="s">Auditoria do cálculo</h3>
+    <div class="card">${memoHTML(alvo.m)}</div>
+    <p class="sub" style="margin-top:8px">Aqui aparece o PNDR, que é o caso mais delicado:
+    repare que ele é ponderado pela proteína aportada, não pela massa.</p>`;
+  el.innerHTML=h;
+}
+
+/* ================= ABA 3 ================= */
+/* ---------- situação da base: quantos valores têm fonte verificada ---------- */
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function contarProv(){let n=0;
+  P.forEach(p=>COMS.forEach(c=>{const d=get(c,p[0]); if(d.v!==null&&d.prov) n++})); return n}
+function contarValores(){return P.reduce((a,p)=>a+p[4].filter(v=>v!==null).length,0)}
+function origemTxt(){return (typeof ORIGEM_DADOS!=="undefined")?ORIGEM_DADOS:null}
+
+function renderAvisos(){
+  const tot=contarValores(), prov=contarProv(), o=origemTxt();
+  document.getElementById("infoDados").innerHTML=
+    `${tot-prov} de ${tot} valores com fonte registrada`+
+    (prov?`, <span class="prov">${prov} provisórios</span>`:"")+"."+
+    (o?`<br>Planilha: ${esc(o.arquivo)}<br>Atualizada no app em ${esc(o.geradoEm)}.`:"");
+  document.getElementById("avisoTopo").innerHTML=prov
+    ? `<div class="alert"><b>${prov} de ${tot} valores nutricionais ainda são provisórios</b>
+        (marcados com <span class="prov">*</span>), sem fonte verificada. Resultados que usam esses
+        valores devem ser conferidos antes de embasar uma negociação.</div>`
+    : `<div class="info"><b>Valores de referência.</b> Os dados nutricionais vêm de tabelas técnicas
+        (CQBAL, Tabelas Brasileiras) e de fichas de fornecedores. Um lote específico pode variar:
+        quando houver laudo do lote, ele prevalece. A fonte de cada número aparece em
+        “Como essa conta é feita?” e na aba Base de Dados.</div>`;
+}
+
+function renderBase(){
+  const o=origemTxt();
+  document.getElementById("resumoBase").textContent=
+    `${P.length} parâmetros | ${COMS.length} commodities`+(o?` | ${o.arquivo}`:"");
+  let h=`<tr><th>Parâmetro</th><th>Unidade</th><th>Base</th><th>Categoria</th>`+
+    COMS.map(c=>`<th style="text-align:right">${c}</th>`).join("")+`</tr>`;
+  P.forEach((p,pi)=>{
+    h+=`<tr><td>${p[0]}</td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td>`+
+      COMS.map((c,ci)=>{const d=get(c,p[0]);
+        return `<td class="n cel" onclick="verFonte(${pi},${ci})" title="${esc(fonteTxt(d))}">`+
+          (d.v===null?'<span class="prov">N/D</span>':fmt(d.v)+(d.prov?' <span class="prov">*</span>':""))+
+          `</td>`}).join("")+`</tr>`;
+  });
+  document.getElementById("tBase").innerHTML=h;
+  const prov=contarProv();
+  document.getElementById("avisoProv").innerHTML=prov
+    ? `<div class="alert"><span class="prov">*</span> <b>${prov} valores provisórios</b> — sem fonte
+        verificada na aba FONTES.</div>`
+    : `<div class="okmsg">Todos os ${contarValores()} valores preenchidos têm fonte registrada.
+        Células com <b>N/D</b> não têm dado: o app não calcula com elas.</div>`;
+  /* resumo das fontes, com contagem, para auditoria rápida */
+  const cont={};
+  P.forEach(p=>COMS.forEach(c=>{const d=get(c,p[0]); if(d.v!==null){
+    const k=d.fonte||"(sem fonte)"; cont[k]=(cont[k]||0)+1}}));
+  let lf=`<table><tr><th>Fonte</th><th style="text-align:right">Valores</th></tr>`+
+    Object.entries(cont).sort((a,b)=>b[1]-a[1]).map(([f,n])=>
+      `<tr><td>${esc(f)}</td><td class="n">${n}</td></tr>`).join("")+`</table>`;
+  if(typeof OBS_COMMODITY!=="undefined") Object.entries(OBS_COMMODITY).forEach(([c,t])=>
+    lf+=`<p class="sub" style="margin-top:8px"><b>${esc(c)}:</b> ${esc(t)}</p>`);
+  document.getElementById("listaFontes").innerHTML=lf;
+}
+/* detalhe da fonte de uma célula (toque funciona no celular, onde não há "hover") */
+function verFonte(pi,ci){
+  const p=P[pi], c=COMS[ci], d=get(c,p[0]), f=p[5]?p[5][ci]:null;
+  let h=`<b>${esc(p[0])} — ${esc(c)}:</b> ${d.v===null?"N/D (sem dado)":fmt(d.v)+" "+esc(p[1])+" ("+p[2]+")"}<br>`+
+    `Fonte: <b>${esc(fonteTxt(d))}</b>`;
+  if(f&&/^https?:\/\//i.test(f.link)) h+=` · <a href="${esc(f.link)}" target="_blank" rel="noopener"
+    style="color:var(--marca-clara)">abrir link</a>`;
+  if(f&&f.data) h+=` · data: ${esc(f.data)}`;
+  if(f&&f.obs) h+=`<br>Observação: ${esc(f.obs)}`;
+  document.getElementById("detFonte").innerHTML=h;
+}
+
+/* ================= ORQUESTRAÇÃO ================= */
+function render(){
+  renderAvisos();
+  document.getElementById("hcot").textContent=
+    `Cotações do Dia (R$/ton) — ${document.getElementById("embalagem").value}`;
+  document.getElementById("resumoCfg").textContent=
+    `${document.getElementById("especie").value} · ${document.getElementById("praca").value}`;
+  renderSel(); renderEcon(); renderLimite(); renderBarras();
+  renderIngs();
+  espelharExtras();
+  renderOtim();
+  document.getElementById("formO").innerHTML=linhasForm(fO,"fO");
+  document.getElementById("formR").innerHTML=linhasForm(fR,"fR");
+  document.getElementById("somaO").innerHTML=somaHTML(fO,"original");
+  document.getElementById("somaR").innerHTML=somaHTML(fR,"reestruturada");
+  renderRels(); renderComp(); renderBase();
+}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+  document.querySelectorAll(".pane").forEach(x=>x.classList.remove("on"));
+  t.classList.add("on");
+  const pane=document.getElementById("p"+t.dataset.t);
+  pane.classList.add("on");
+  /* no celular, se a pessoa estava no meio da pagina, volta ao inicio da aba */
+  const topo=document.querySelector(".fixoTopo");
+  const y=pane.getBoundingClientRect().top+window.scrollY-topo.offsetHeight-6;
+  if(window.scrollY>y) window.scrollTo(0,y);
+});
+
+/* gaveta de configuracoes (so aparece no celular) */
+function abrirConfig(abrir){document.body.classList.toggle("cfg",abrir)}
+document.addEventListener("keydown",e=>{if(e.key==="Escape") abrirConfig(false)});
+["especie","praca","embalagem"].forEach(id=>
+  document.getElementById(id).addEventListener("input",render));
+buildPrecos(); render();
+</script>
+</body>
+</html>
